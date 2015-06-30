@@ -24,8 +24,6 @@ function(tests folder)
   endforeach()
 endfunction(tests)
 
-include_directories ("${CMAKE_BINARY_DIR}/include")
-
 if (WITH_TEST_CORRECTNESS)
   tests(correctness)
 endif()
