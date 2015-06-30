@@ -2,7 +2,6 @@ option(WITH_TUTORIALS "Build tutorials" ON)
 
 if (WITH_TUTORIALS)
   message(STATUS "Building tutorials enabled")
-  find_package(PNG)
   macro(use_libpng TARGET)
     target_compile_definitions(${TARGET} PRIVATE ${PNG_DEFINITIONS})
     target_include_directories(${TARGET} PRIVATE ${PNG_INCLUDE_DIRS})

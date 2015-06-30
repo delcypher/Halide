@@ -131,6 +131,9 @@ if (BUILD_TESTS)
   add_subdirectory(test)
 endif()
 
+
+# Look for libpng. Some apps and tutorials depend on it
+find_package(PNG)
 add_subdirectory(apps)
 add_subdirectory(tutorial)
 
