@@ -1,8 +1,5 @@
 option(WITH_TUTORIALS "Build tutorials" ON)
 
-include_directories ("${CMAKE_BINARY_DIR}/include")
-link_directories ("${LLVM_LIB}")
-
 if (WITH_TUTORIALS)
   message(STATUS "Building tutorials enabled")
   find_package(PNG)

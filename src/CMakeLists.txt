@@ -20,7 +20,6 @@ else()
   set(HALIDE_LIBRARY_TYPE STATIC)
 endif()
 
-include_directories("${LLVM_INCLUDE}")
 # Get LLVM libraries
 # FIXME: We don't need all the LLVM components.
 # We'll get faster linking if we specify only the components we need
@@ -510,6 +509,11 @@ else()
     target_compile_options(Halide PUBLIC "-fno-rtti")
   endif()
 endif()
+
+# Setup library includes
+target_include_directories(Halide PRIVATE ${LLVM_INCLUDE})
+# Any target that links against this library will inherit this include path
+target_include_directories(Halide INTERFACE ${CMAKE_BINARY_DIR}/include)
 
 # Link against LLVM
 if (NUMBER_OF_LLVM_BUILD_TYPES GREATER 1)
