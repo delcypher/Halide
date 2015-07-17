@@ -10,6 +10,7 @@
 
 #include "Debug.h"
 #include "Error.h"
+#include "HalfFloat.h"
 #include "Type.h"
 #include "IntrusivePtr.h"
 #include "Util.h"
