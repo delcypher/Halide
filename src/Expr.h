@@ -13,6 +13,7 @@
 #include "Type.h"
 #include "IntrusivePtr.h"
 #include "Util.h"
+#include "HalfFloat.h"
 
 namespace Halide {
 namespace Internal {
@@ -142,13 +143,25 @@ private:
     static IntImm small_int_cache[17];
 };
 
-/** Floating point constants */
+/** 32-bit Floating point constants */
 struct FloatImm : public ExprNode<FloatImm> {
     float value;
 
     static FloatImm *make(float value) {
         FloatImm *node = new FloatImm;
         node->type = Float(32);
+        node->value = value;
+        return node;
+    }
+};
+
+/** 16-bit Floating point constants */
+struct HalfFloatImm : public ExprNode<HalfFloatImm> {
+  Halide::fp16_t value;
+
+    static HalfFloatImm *make(fp16_t value) {
+        HalfFloatImm *node = new HalfFloatImm;
+        node->type = Float(16);
         node->value = value;
         return node;
     }
@@ -195,6 +208,10 @@ struct Expr : public Internal::IRHandle {
                      << "If you wanted a double, use cast<double>(" << x
                      << (x == (int64_t)(x) ? ".0f" : "f")
                      << ")\n";
+    }
+
+    /** Make an expression representing a const 16-bit float (i.e. a HalfFloatImm) */
+    EXPORT Expr(Halide::fp16_t x) : IRHandle(Internal::HalfFloatImm::make(x)) {
     }
 
     /** Make an expression representing a const string (i.e. a StringImm) */

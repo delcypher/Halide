@@ -231,6 +231,7 @@ set(HEADER_FILES
   Func.h
   Function.h
   Generator.h
+  HalfFloat.h
   IR.h
   IREquality.h
   IRMatch.h
@@ -367,6 +368,7 @@ add_library(Halide ${HALIDE_LIBRARY_TYPE}
   Function.cpp
   FuseGPUThreadLoops.cpp
   Generator.cpp
+  HalfFloat.cpp
   IR.cpp
   IREquality.cpp
   IRMatch.cpp

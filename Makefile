@@ -242,6 +242,7 @@ SOURCE_FILES = \
   Function.cpp \
   FuseGPUThreadLoops.cpp \
   Generator.cpp \
+  HalfFloat.cpp \
   Image.cpp \
   InjectHostDevBufferCopies.cpp \
   InjectImageIntrinsics.cpp \
@@ -358,6 +359,7 @@ HEADER_FILES = \
   Function.h \
   FuseGPUThreadLoops.h \
   Generator.h \
+  HalfFloat.h \
   runtime/HalideRuntime.h \
   Image.h \
   InjectHostDevBufferCopies.h \
