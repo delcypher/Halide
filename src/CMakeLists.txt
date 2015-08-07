@@ -229,6 +229,8 @@ set(HEADER_FILES
   Function.h
   Generator.h
   HalfFloat.h
+  # HalfFloatLiteral.h is deliberately not here because clients must
+  # include it manually if they need it.
   IR.h
   IREquality.h
   IRMatch.h
@@ -312,6 +314,7 @@ file(COPY runtime/HalideRuntimeOpenCL.h DESTINATION "${CMAKE_BINARY_DIR}/include
 file(COPY runtime/HalideRuntimeOpenGL.h DESTINATION "${CMAKE_BINARY_DIR}/include")
 file(COPY runtime/HalideRuntimeOpenGLCompute.h DESTINATION "${CMAKE_BINARY_DIR}/include")
 file(COPY runtime/HalideRuntimeRenderscript.h DESTINATION "${CMAKE_BINARY_DIR}/include")
+file(COPY HalfFloatLiteral.h DESTINATION "${CMAKE_BINARY_DIR}/include")
 
 
 IF ((LLVM_VERSION LESS 36) OR (TARGET_NATIVE_CLIENT))
@@ -369,6 +372,7 @@ add_library(Halide ${HALIDE_LIBRARY_TYPE}
   FuseGPUThreadLoops.cpp
   Generator.cpp
   HalfFloat.cpp
+  HalfFloatLiteral.cpp
   IR.cpp
   IREquality.cpp
   IRMatch.cpp

@@ -1,4 +1,5 @@
 #include "Halide.h"
+#include "HalfFloatLiteral.h"
 #include <stdio.h>
 #include <cmath>
 
@@ -25,11 +26,13 @@ int main() {
     fp16_t zeroPStringConstructorHex("0x0p0", fp16_t::RoundingMode::TONEAREST_TIESTOEVEN);
     fp16_t zeroPFromFloat(0.0f, fp16_t::RoundingMode::TONEAREST_TIESTOEVEN);
     fp16_t zeroPFromDouble(0.0,fp16_t::RoundingMode::TONEAREST_TIESTOEVEN);
+    fp16_t zeroPLiteral = 0.0_fp16;
     h_assert(zeroDefaultConstructor.toBits() == zeroP.toBits(), "Mismatch between constructors");
     h_assert(zeroPStringConstructorDecimal.toBits() == zeroP.toBits(), "Mismatch between constructors");
     h_assert(zeroPStringConstructorHex.toBits() == zeroP.toBits(), "Mismatch between constructors");
     h_assert(zeroPFromFloat.toBits() == zeroP.toBits(), "Mistmatch between constructors");
     h_assert(zeroPFromDouble.toBits() == zeroP.toBits(), "Mistmatch between constructors");
+    h_assert(zeroPLiteral.toBits() == zeroP.toBits(), "Mistmatch between constructors");
 
     // Check the representation
     h_assert(zeroP.isZero() && !zeroP.isNegative(), "+ve zero invalid");
@@ -51,10 +54,12 @@ int main() {
     fp16_t zeroNStringConstructorHex("-0x0p0", fp16_t::RoundingMode::TONEAREST_TIESTOEVEN);
     fp16_t zeroNFromFloat(-0.0f, fp16_t::RoundingMode::TONEAREST_TIESTOEVEN);
     fp16_t zeroNFromDouble(-0.0, fp16_t::RoundingMode::TONEAREST_TIESTOEVEN);
+    fp16_t zeroNLiteral = -0.0_fp16;
     h_assert(zeroNStringConstructorDecimal.toBits() == zeroN.toBits(), "Mismatch between constructors");
     h_assert(zeroNStringConstructorHex.toBits() == zeroN.toBits(), "Mismatch between constructors");
     h_assert(zeroNFromFloat.toBits() == zeroN.toBits(), "Mismatch between constructors");
     h_assert(zeroNFromDouble.toBits() == zeroN.toBits(), "Mismatch between constructors");
+    h_assert(zeroNLiteral.toBits() == zeroN.toBits(), "Mistmatch between constructors");
 
     // Check the representation
     h_assert(zeroN.isZero() && zeroN.isNegative(), "-ve zero invalid");
