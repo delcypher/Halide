@@ -154,14 +154,14 @@ private:
         if (from == Float(32) && min_a.defined() && max_a.defined()) {
             if (const FloatImm *min_float = min_a.as<FloatImm>()) {
                 if (const FloatImm *max_float = max_a.as<FloatImm>()) {
-                    double max_magnitude = ::pow(2.0, to.bits-1);
+                    FloatImm::HighestPrecisionTy max_magnitude = ::pow(2.0, to.bits-1);
                     if (to.is_uint() &&
-                        min_float->value >= 0.0f &&
-                        max_float->value < 2.0*max_magnitude) {
+                        min_float->as_highest_precision_float() >= 0.0 &&
+                        max_float->as_highest_precision_float() < 2.0*max_magnitude) {
                         could_overflow = false;
                     } else if (to.is_int() &&
-                               min_float->value >= -max_magnitude &&
-                               max_float->value < max_magnitude) {
+                               min_float->as_highest_precision_float() >= -max_magnitude &&
+                               max_float->as_highest_precision_float() < max_magnitude) {
                         could_overflow = false;
                     }
                 }
