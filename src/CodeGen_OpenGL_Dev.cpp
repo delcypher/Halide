@@ -35,9 +35,14 @@ Type map_type(const Type &type) {
     Type result = type;
     if (type.is_scalar()) {
         if (type.is_float()) {
-            user_assert(type.bits <= 32)
-                << "GLSL: Can't represent a float with " << type.bits << " bits.\n";
-            result = Float(32);
+            if (type.bits == 32) {
+                result = Float(32);
+            } else if (type.bits == 16) {
+                result = Float(16);
+            }
+            else {
+                internal_error << "GLSL: Can't represent a float with " << type.bits << " bits.\n";
+            }
         } else if (type.bits == 1) {
             result = Bool();
         } else if (type == Int(32)) {
@@ -205,6 +210,9 @@ string CodeGen_GLSLBase::print_type(Type type) {
             else if (type.bits == 32) {
                 oss << "float";
             }
+            else if (type.bits == 16) {
+                oss << "mediump float";
+            }
             else {
                 internal_error << "GLSL: Float type of width " << type.bits <<
                 "not supported\n";
@@ -256,7 +264,8 @@ void CodeGen_GLSL::visit(const FloatImm *op) {
     unsigned precision = 0;
     bool isDouble = false;
     if (op->as<float16_t>()) {
-        internal_error << "GLSL: Half not supported\n";
+        // FIXME: Printing this way sucks, can we just print the bits and cast them to the float?
+        precision = 5;
     } else if (op->as<float>()) {
         precision = 9;
     }
@@ -684,6 +693,8 @@ void CodeGen_GLSL::add_kernel(Stmt stmt, string name,
                 type_name = "uint16_t";
             } else if (t == Float(32)) {
                 type_name = "float";
+            } else if (t == Float(16)) {
+                type_name = "float16_t";
             } else {
                 user_error << "GLSL: buffer " << args[i].name << " has invalid type " << t << ".\n";
             }
