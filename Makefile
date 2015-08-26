@@ -255,6 +255,7 @@ SOURCE_FILES = \
   FastIntegerDivide.cpp \
   FindCalls.cpp \
   Float16.cpp \
+  Float16Cast.cpp \
   Func.cpp \
   Function.cpp \
   FuseGPUThreadLoops.cpp \
@@ -375,6 +376,7 @@ HEADER_FILES = \
   FastIntegerDivide.h \
   FindCalls.h \
   Float16.h \
+  Float16Cast.h \
   Func.h \
   Function.h \
   FuseGPUThreadLoops.h \
