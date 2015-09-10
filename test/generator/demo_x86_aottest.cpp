@@ -17,7 +17,7 @@
 
 using namespace Halide::Tools;
 
-const int kSize = 10000;
+const int kSize = 30000;
 
 int main(int argc, char **argv) {
 
@@ -66,17 +66,17 @@ int main(int argc, char **argv) {
   FLUSH
 
   printf("Starting pure float impl\n");
-  sStart = std::chrono::high_resolution_clock::now();
+  floatStart = std::chrono::high_resolution_clock::now();
   demo_x86_no_half(inputAsFloat, param, outputAsFloat);
-  sEnd = std::chrono::high_resolution_clock::now();
+  floatEnd = std::chrono::high_resolution_clock::now();
   printf("Finishing pure float impl\n");
 
   FLUSH
 
   printf("Starting soft\n");
-  floatStart = std::chrono::high_resolution_clock::now();
+  sStart = std::chrono::high_resolution_clock::now();
   demo_x86_soft(input, param, output);
-  floatEnd = std::chrono::high_resolution_clock::now();
+  sEnd = std::chrono::high_resolution_clock::now();
   printf("Finished soft\n");
 
   duration_t vTime = vEnd - vStart;
