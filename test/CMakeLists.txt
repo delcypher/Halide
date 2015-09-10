@@ -219,6 +219,17 @@ if (WITH_TEST_GENERATORS)
                                GENERATOR_NAME "demo_x86_no_half"
                                GENERATED_FUNCTION "demo_x86_no_half"
                                GENERATOR_ARGS "target=host")
+      # For preparing data
+      halide_add_generator_dependency(TARGET "${TEST_RUNNER}"
+                               GENERATOR_TARGET "${GEN_NAME}${OBJ_GEN_EXE_SUFFIX}"
+                               GENERATOR_NAME "demo_x86_do_up_cast"
+                               GENERATED_FUNCTION "demo_x86_do_up_cast"
+                               GENERATOR_ARGS "target=host")
+      halide_add_generator_dependency(TARGET "${TEST_RUNNER}"
+                               GENERATOR_TARGET "${GEN_NAME}${OBJ_GEN_EXE_SUFFIX}"
+                               GENERATOR_NAME "demo_x86_gen_half"
+                               GENERATED_FUNCTION "demo_x86_gen_half"
+                               GENERATOR_ARGS "target=host")
     else()
       # All the other foo_test.cpp just depend on foo_generator.cpp
       halide_add_generator_dependency(TARGET "${TEST_RUNNER}"

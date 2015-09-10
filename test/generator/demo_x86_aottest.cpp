@@ -6,6 +6,8 @@
 #include "demo_x86_soft.h"
 #include "demo_x86_vector.h"
 #include "demo_x86_no_half.h"
+#include "demo_x86_do_up_cast.h" // For preparing data
+#include "demo_x86_gen_half.h" // For preparing data
 #include "halide_image.h"
 #include <chrono>
 #include <iostream>
@@ -32,15 +34,20 @@ int main(int argc, char **argv) {
   // FIXME: This is too slow!
   printf("Initialise %ux%u img\n", kSize, kSize);
   initStart = std::chrono::high_resolution_clock::now();
+  // Use Halide to initialise the halfs
+  //demo_x86_gen_half(kSize, input); // FIXME: Using this segfaults! Why!?
+  /*
   // Initialise data
   for (int x=0; x < kSize; ++x) {
     for (int y=0; y < kSize; ++y) {
         // Only positive halfs, no NaN or inf
         uint16_t halfBits = (x + y*kSize) % 0x7bff;
         input(x, y) = halfBits;
-        inputAsFloat(x, y) = halide_float16_bits_to_float(halfBits);
     }
-  }
+  } */
+  // Use Halide to initialise the float data from the halfs
+  demo_x86_do_up_cast(input, inputAsFloat);
+
   initEnd = std::chrono::high_resolution_clock::now();
   printf("Finished initialising\n");
 

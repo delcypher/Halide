@@ -63,7 +63,40 @@ public:
     }
 };
 
+class DemoX86DoUpCast : public Halide::Generator<DemoX86DoUpCast> {
+public:
+    ImageParam input_image{ Float(16), 2, "input_image"};
+
+    Func build() {
+        Var x, y, c;
+        Func upCast("upcast"), process("process"), downCast("downcast");
+
+        // Upcast
+        upCast(x, y) = cast<float>( input_image(x, y) );
+        upCast.vectorize(x, 8);
+        return upCast;
+    }
+};
+
+class DemoX86GenerateHalf : public Halide::Generator<DemoX86GenerateHalf> {
+public:
+    // FIXME: How do I get the input image width
+    Param<uint32_t> rowWidth{ "rowWidth", 0 };
+    Func build() {
+        Var x, y, c;
+        Func output;
+        output(x, y) = cast<uint16_t>( (x + y*rowWidth) % 0x7bff );
+
+        // FIXME: Need to optimize schedule
+
+        return output;
+    }
+};
+
 Halide::RegisterGenerator<DemoX86UseHalf> register_example{"demo_x86"};
 Halide::RegisterGenerator<DemoX86NoUseHalf> register_example2{"demo_x86_no_half"};
+// Used for preparing data
+Halide::RegisterGenerator<DemoX86DoUpCast> register_example3{"demo_x86_do_up_cast"};
+Halide::RegisterGenerator<DemoX86GenerateHalf> register_example4{"demo_x86_gen_half"};
 
 }  // namespace
