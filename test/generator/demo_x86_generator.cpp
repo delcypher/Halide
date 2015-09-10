@@ -58,6 +58,8 @@ public:
         // FIXME: This needs to be the same as what DemoX86 does!
         // Do simple processing
         process(x, y) = input_image(x , y) * multiplication_factor;
+        std::cout << "No Half, use vectorize\n";
+        process.vectorize(x, 8);
 
         return process;
     }
