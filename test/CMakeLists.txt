@@ -201,6 +201,18 @@ if (WITH_TEST_GENERATORS)
                                GENERATOR_NAME "${GEN_NAME}"
                                GENERATED_FUNCTION "${FUNC_NAME}_ucon"
                                GENERATOR_ARGS "target=host-register_metadata-user_context")
+    elseif(TEST_SRC STREQUAL "demo_x86_aottest.cpp")
+      # Create the software and vectorised generator dependencies
+      halide_add_generator_dependency(TARGET "${TEST_RUNNER}"
+                               GENERATOR_TARGET "${GEN_NAME}${OBJ_GEN_EXE_SUFFIX}"
+                               GENERATOR_NAME "${GEN_NAME}"
+                               GENERATED_FUNCTION "demo_x86_soft"
+                               GENERATOR_ARGS "target=x86-64-linux-sse41-avx-fma")
+      halide_add_generator_dependency(TARGET "${TEST_RUNNER}"
+                               GENERATOR_TARGET "${GEN_NAME}${OBJ_GEN_EXE_SUFFIX}"
+                               GENERATOR_NAME "${GEN_NAME}"
+                               GENERATED_FUNCTION "demo_x86_vector"
+                               GENERATOR_ARGS "target=x86-64-linux-sse41-avx-fma-f16c")
     else()
       # All the other foo_test.cpp just depend on foo_generator.cpp
       halide_add_generator_dependency(TARGET "${TEST_RUNNER}"

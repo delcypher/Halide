@@ -3,43 +3,26 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "demo_x86.h"
+#include "demo_x86_soft.h"
+#include "demo_x86_vector.h"
 #include "halide_image.h"
 
 using namespace Halide::Tools;
 
-const int kSize = 32;
-
-void verify(const Image<int> &img, float compiletime_factor, float runtime_factor, int channels) {
-    for (int i = 0; i < kSize; i++) {
-        for (int j = 0; j < kSize; j++) {
-            for (int c = 0; c < channels; c++) {
-                int expected = (int32_t)(compiletime_factor * runtime_factor * c * (i > j ? i : j));
-                if (img(i, j, c) != expected) {
-                    printf("img[%d, %d, %d] = %d (expected %d)\n", i, j, c, img(i, j, c), expected);
-                    exit(-1);
-                }
-            }
-        }
-    }
-}
+const int kSize = 4096 *10;
 
 int main(int argc, char **argv) {
 
-  Image<int32_t> output(kSize, kSize, 3);
+  // FIXME: Initialise data!
+  Image<uint16_t> input(kSize, kSize, 1); // float16 bits
+  Image<uint16_t> output(kSize, kSize, 1);
 
-  // For Ahead-of-time compilation, we don't get to customize any GeneratorParams:
-  // they were baked into the object code by our build system. These are the default values
-  // for Example (replicated here to use in verify()).
-  const float compiletime_factor = 1.0f;
-  const int channels = 3;
-
-  // We can, of course, pass whatever values for Param/ImageParam that we like.
-  demo_x86(3.3245f, output);
-  verify(output, compiletime_factor, 3.3245f, channels);
-
-  demo_x86(-1.234f, output);
-  verify(output, compiletime_factor, -1.234f, channels);
+  printf("Starting soft\n");
+  demo_x86_soft(input, 1.5, output);
+  printf("Finished soft\n");
+  printf("Starting vector\n");
+  demo_x86_vector(input, 1.5, output);
+  printf("Finished vector\n");
 
   printf("Success!\n");
   return 0;
