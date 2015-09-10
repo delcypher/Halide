@@ -13,7 +13,7 @@
 
 namespace {
 
-class DemoX86 : public Halide::Generator<DemoX86> {
+class DemoX86UseHalf : public Halide::Generator<DemoX86UseHalf> {
 public:
     ImageParam input_image{ Float(16), 2, "input_image"};
     Param<float> multiplication_factor{ "runtime_factor", 1.5 };
@@ -46,10 +46,24 @@ public:
     }
 };
 
-// If you're only using a Generator with the JIT, you don't need to register it;
-// however, registering it is needed for working seamlessly with the ahead-of-time
-// compilation tools, so it's generally recommended to always register it.
-// (As with Params, the name is constrained to C-like patterns.)
-Halide::RegisterGenerator<DemoX86> register_example{"demo_x86"};
+class DemoX86NoUseHalf : public Halide::Generator<DemoX86NoUseHalf> {
+public:
+    ImageParam input_image{ Float(32), 2, "input_image"};
+    Param<float> multiplication_factor{ "runtime_factor", 1.5 };
+
+    Func build() {
+        Var x, y;
+        Func process("process");
+
+        // FIXME: This needs to be the same as what DemoX86 does!
+        // Do simple processing
+        process(x, y) = input_image(x , y) * multiplication_factor;
+
+        return process;
+    }
+};
+
+Halide::RegisterGenerator<DemoX86UseHalf> register_example{"demo_x86"};
+Halide::RegisterGenerator<DemoX86NoUseHalf> register_example2{"demo_x86_no_half"};
 
 }  // namespace

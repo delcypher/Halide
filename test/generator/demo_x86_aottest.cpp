@@ -5,6 +5,7 @@
 
 #include "demo_x86_soft.h"
 #include "demo_x86_vector.h"
+#include "demo_x86_no_half.h"
 #include "halide_image.h"
 
 using namespace Halide::Tools;
@@ -16,13 +17,23 @@ int main(int argc, char **argv) {
   // FIXME: Initialise data!
   Image<uint16_t> input(kSize, kSize, 1); // float16 bits
   Image<uint16_t> output(kSize, kSize, 1);
+  Image<float> inputAsFloat(kSize, kSize, 1);
+  Image<float> outputAsFloat(kSize, kSize, 1);
+
+  float param = 1.5;
+
+  printf("Starting vector\n");
+  demo_x86_vector(input, param, output);
+  printf("Finished vector\n");
+
+  printf("Starting pure float impl\n");
+  demo_x86_no_half(inputAsFloat, param, outputAsFloat);
+  printf("Finishing pure float impl\n");
 
   printf("Starting soft\n");
-  demo_x86_soft(input, 1.5, output);
+  demo_x86_soft(input, param, output);
   printf("Finished soft\n");
-  printf("Starting vector\n");
-  demo_x86_vector(input, 1.5, output);
-  printf("Finished vector\n");
+
 
   printf("Success!\n");
   return 0;
