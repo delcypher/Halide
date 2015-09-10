@@ -31,7 +31,9 @@ int main(int argc, char **argv) {
     floatStart, floatEnd, initStart, initEnd;
   float param = 1.5;
 
-  int repeats = 10;
+  // The first result should always be thrown away.
+  // This will give us 11 usable results which we can take the median from
+  int repeats = 12;
 
   // YAML start
   cout << "# YAML\n";
@@ -43,81 +45,78 @@ int main(int argc, char **argv) {
   cout << "# steady = " << boolalpha << chrono::high_resolution_clock::is_steady << endl << endl;
 
   for (int kSize=64; kSize < 50000; kSize += 64) {
-    Image<uint16_t> input(kSize, kSize, 1); // float16 bits
+    // Don't bother initialising these, we just write into them and never read.
     Image<uint16_t> output(kSize, kSize, 1);
-    Image<float> inputAsFloat(kSize, kSize, 1);
     Image<float> outputAsFloat(kSize, kSize, 1);
 
-    // FIXME: This is too slow!
-    fprintf(stderr, "Initialise %ux%u img\n", kSize, kSize);
-    initStart = std::chrono::high_resolution_clock::now();
-    // Use Halide to initialise the halfs
-    demo_x86_gen_half(kSize, input);
-    /*
-    for (int x=0; x < kSize; ++x) {
-      for (int y=0; y < kSize; ++y) {
-          // Only positive halfs, no NaN or inf
-          uint16_t halfBits = (x + y*kSize) % 0x7bff;
-          if (halfBits != input(x, y)) {
-              std::cerr << "mismatch\n";
-          }
-      }
-    } */
-    // Use Halide to initialise the float data from the halfs
-    demo_x86_do_up_cast(input, inputAsFloat);
-
-    initEnd = std::chrono::high_resolution_clock::now();
-    duration_t initTime = chrono::duration_cast<duration_t>(initEnd - initStart);
-    fprintf(stderr, "Finished initialising\n");
-
     // Begin dict
-    cout << "- init_time: " << initTime.count() << "\n";
-    cout << indent1 << "dim_size: " << kSize << "\n";
-    cout << indent1 << "results:\n";
+    cout << "- dim_size: " << kSize << "\n";
     cout.flush();
 
-    for (int repeat=0; repeat < repeats ; ++repeat) {
+    // Don't share input between stages to try to prevent caching effects
 
-      // EVIL!
-      #define FLUSH do { \
-                         _mm_mfence(); \
-                         _mm_clflush(input.data()); \
-                         _mm_clflush(inputAsFloat.data()); \
-                    } while(0);
-      FLUSH
 
-      fprintf(stderr, "Starting vector\n");
-      vStart = std::chrono::high_resolution_clock::now();
-      demo_x86_vector(input, param, output);
-      vEnd = std::chrono::high_resolution_clock::now();
-      fprintf(stderr, "Finished vector\n");
+    // Vectorized: conv(float16, float) -> process -> conv(float, float16)
+    {
+      cout << indent1 << "vector_f16_f32_f16: [";
+      Image<uint16_t> input(kSize, kSize, 1); // float16 bits
+      Image<float> inputAsFloat(kSize, kSize, 1);
+      demo_x86_gen_half(kSize, input); // Init
+      for (int repeat=0; repeat < repeats ; ++repeat) {
+        fprintf(stderr, "Starting vector\n");
+        vStart = std::chrono::high_resolution_clock::now();
+        demo_x86_vector(input, param, output);
+        vEnd = std::chrono::high_resolution_clock::now();
+        fprintf(stderr, "Finished vector\n");
 
-      FLUSH
 
-      fprintf(stderr, "Starting pure float impl\n");
-      floatStart = std::chrono::high_resolution_clock::now();
-      demo_x86_no_half(inputAsFloat, param, outputAsFloat);
-      floatEnd = std::chrono::high_resolution_clock::now();
-      fprintf(stderr, "Finishing pure float impl\n");
-
-      FLUSH
-
-      fprintf(stderr, "Starting soft\n");
-      sStart = std::chrono::high_resolution_clock::now();
-      demo_x86_soft(input, param, output);
-      sEnd = std::chrono::high_resolution_clock::now();
-      fprintf(stderr, "Finished soft\n");
-
-      duration_t vTime = chrono::duration_cast<duration_t>(vEnd - vStart);
-      duration_t sTime = chrono::duration_cast<duration_t>(sEnd - sStart);
-      duration_t floatTime = chrono::duration_cast<duration_t>(floatEnd - floatStart);
-
-      cout << indent2 << "- [" << vTime.count() << ", "
-                             << sTime.count() << ", "
-                             << floatTime.count() <<
-                         "]\n";
+        duration_t vTime = chrono::duration_cast<duration_t>(vEnd - vStart);
+        cout << ((repeat!=0)?",":"") << vTime.count();
+      }
+      cout << "]\n";
       cout.flush();
-      FLUSH
+    }
+
+
+    // Vectorized: process
+    {
+      cout << indent1 << "vector_f32: [";
+      Image<uint16_t> input(kSize, kSize, 1); // float16 bits
+      Image<float> inputAsFloat(kSize, kSize, 1);
+      demo_x86_gen_half(kSize, input); // Init
+      demo_x86_do_up_cast(input, inputAsFloat); // Init
+      for (int repeat=0; repeat < repeats ; ++repeat) {
+        fprintf(stderr, "Starting pure float impl\n");
+        floatStart = std::chrono::high_resolution_clock::now();
+        demo_x86_no_half(inputAsFloat, param, outputAsFloat);
+        floatEnd = std::chrono::high_resolution_clock::now();
+        fprintf(stderr, "Finishing pure float impl\n");
+
+        duration_t floatTime = chrono::duration_cast<duration_t>(floatEnd - floatStart);
+        cout << ((repeat!=0)?",":"") << floatTime.count();
+      }
+      cout << "]\n";
+      cout.flush();
+    }
+
+    // Scalar software: conv(float16, float) -> process -> conv(float16, float)
+    {
+      cout << indent1 << "soft_f16_f32_f16: [";
+      Image<uint16_t> input(kSize, kSize, 1); // float16 bits
+      demo_x86_gen_half(kSize, input); // Init
+      for (int repeat=0; repeat < repeats ; ++repeat) {
+        fprintf(stderr, "Starting soft\n");
+        sStart = std::chrono::high_resolution_clock::now();
+        demo_x86_soft(input, param, output);
+        sEnd = std::chrono::high_resolution_clock::now();
+        fprintf(stderr, "Finished soft\n");
+
+
+        duration_t sTime = chrono::duration_cast<duration_t>(sEnd - sStart);
+        cout << ((repeat!=0)?",":"") << sTime.count();
+      }
+      cout << "]\n";
+      cout.flush();
     }
     cout << "\n";
   }
