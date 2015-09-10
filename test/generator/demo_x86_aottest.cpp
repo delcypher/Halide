@@ -35,14 +35,15 @@ int main(int argc, char **argv) {
   printf("Initialise %ux%u img\n", kSize, kSize);
   initStart = std::chrono::high_resolution_clock::now();
   // Use Halide to initialise the halfs
-  //demo_x86_gen_half(kSize, input); // FIXME: Using this segfaults! Why!?
+  demo_x86_gen_half(kSize, input);
   /*
-  // Initialise data
   for (int x=0; x < kSize; ++x) {
     for (int y=0; y < kSize; ++y) {
         // Only positive halfs, no NaN or inf
         uint16_t halfBits = (x + y*kSize) % 0x7bff;
-        input(x, y) = halfBits;
+        if (halfBits != input(x, y)) {
+            std::cerr << "mismatch\n";
+        }
     }
   } */
   // Use Halide to initialise the float data from the halfs
